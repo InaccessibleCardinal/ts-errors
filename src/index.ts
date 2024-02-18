@@ -1,13 +1,21 @@
-import { AppError, ErrorNames } from "./errors";
+import "reflect-metadata";
+import express, { Request, Response } from "express";
+import cookieParser from "cookie-parser";
+import { loadEnv } from "./env";
 import { log } from "./log";
+import { postsRouter } from "./routes";
 
+loadEnv();
+const apiPort = process.env["API_PORT"];
+const app = express();
 
-(async () => {
-    const err = new Error('downstream failure');
-    const forbiddenError = new AppError({name: ErrorNames.FORBIDDEN_ERROR, message: "no permissions", cause: err});
-    log(forbiddenError);
+app.get("/", handleHome);
+app.use(cookieParser());
+app.use("/posts", postsRouter);
 
-    const valError = new AppError({name: ErrorNames.VALIDATION_ERROR, message: "invalid things", cause: err});
+app.listen(apiPort, () => log(`app listening on ${apiPort}`));
 
-    log(valError);
-})();
+async function handleHome(req: Request, res: Response) {
+    log(`${req.method} ${req.path}`);
+    res.status(200).json({ message: "welcome" });
+}
