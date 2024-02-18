@@ -7,3 +7,4 @@ const controller: Ctrl = Container.autowire(Ctrl);
 export const postsRouter = Router({ mergeParams: true });
 
 postsRouter.get("/", controller.getPosts);
+postsRouter.post("/", controller.addPost);

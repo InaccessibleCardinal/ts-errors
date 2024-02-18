@@ -10,7 +10,7 @@ export interface DBIface {
 export class DB implements DBIface {
     async upsert(post: Post) {
         try {
-            writeFileSync(post.title, JSON.stringify(post, null, 2));
+            writeFileSync(`./data/${post.title}.json`, JSON.stringify(post, null, 2));
             return true;
         } catch (err) {
             log(err);

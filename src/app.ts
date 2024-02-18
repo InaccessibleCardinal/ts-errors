@@ -8,6 +8,7 @@ export function runApp() {
     const apiPort = process.env["API_PORT"];
     const app = express();
 
+    app.use(express.json());
     app.use(cookieParser());
     app.use(apiRoot, homeRouter);
     app.use(`${apiRoot}posts`, postsRouter);
