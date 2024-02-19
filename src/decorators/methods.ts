@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { log } from "../log";
-import { RequestHandlerFunc } from "../controller";
+import { HttpStatusCode, RequestHandlerFunc } from "../controller";
 import { Post } from "../models";
 
 type MiddlewareDecoratorFunction = () => (
@@ -10,16 +10,22 @@ type MiddlewareDecoratorFunction = () => (
 ) => void;
 
 export function Get(path: string) {
-    return function (target: object, _propertyKey: string | symbol, _descriptor: TypedPropertyDescriptor<any>) {
-        Reflect.defineMetadata("apiPath", path, target);
-        Reflect.defineMetadata("apiMethod", "GET", target);
+    return function (target: object, propertyKey: string | symbol, _descriptor: TypedPropertyDescriptor<any>) {
+        Reflect.defineMetadata("apiPath", path, target, propertyKey);
+        Reflect.defineMetadata("apiMethod", "GET", target, propertyKey);
     };
 }
 
 export function Post(path: string) {
-    return function (target: object, _propertyKey: string | symbol, _descriptor: TypedPropertyDescriptor<any>) {
-        Reflect.defineMetadata("apiPath", path, target);
-        Reflect.defineMetadata("apiMethod", "POST", target);
+    return function (target: object, propertyKey: string | symbol, _descriptor: TypedPropertyDescriptor<any>) {
+        Reflect.defineMetadata("apiPath", path, target, propertyKey);
+        Reflect.defineMetadata("apiMethod", "POST", target, propertyKey);
+    };
+}
+
+export function Returns(...statuses: HttpStatusCode[]) {
+    return function (target: object, propertyKey: string | symbol, _descriptor: TypedPropertyDescriptor<any>) {
+        Reflect.defineMetadata("returns", statuses, target, propertyKey);
     };
 }
 

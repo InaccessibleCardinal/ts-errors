@@ -2,12 +2,25 @@ import { Request, Response } from "express";
 import { Inject } from "../../di";
 import { Post as PostShape } from "../../models";
 import { Web, WebServiceIface } from "../../service/web";
-import { ApplyMiddleware, Get, HasEpicCookie, Header, Logging, Post, Protected, ValidatePost } from "../../decorators";
+import {
+    ApplyMiddleware,
+    Get,
+    HasEpicCookie,
+    Header,
+    Logging,
+    Post,
+    Protected,
+    Returns,
+    ValidatePost,
+} from "../../decorators";
 import { Controller } from "../../decorators/component";
+import { ControllerBase } from "../base";
+import { HttpStatus } from "../types";
 
 @Controller("/posts")
-export class Ctrl {
+export class Ctrl extends ControllerBase {
     constructor(@Inject(Web) private svc: WebServiceIface<PostShape>) {
+        super();
         this.svc = svc;
         this.getPosts = this.getPosts.bind(this);
         this.addPost = this.addPost.bind(this);
@@ -18,20 +31,22 @@ export class Ctrl {
     // @Protected()
     // @Logging()
     @ApplyMiddleware(Logging, Protected, HasEpicCookie, Header)
+    @Returns(HttpStatus.OK)
     public async getPosts(_req: Request, res: Response) {
         const posts = await this.svc.getAll();
-        res.status(200).json(posts);
+        this.Ok(res, posts);
     }
 
     @Post("/")
     @HasEpicCookie()
     @ValidatePost()
+    @Returns(HttpStatus.CREATED, HttpStatus.BAD_REQUEST, HttpStatus.FORBIDDEN, HttpStatus.INTERNAL_SERVER_ERROR)
     public async addPost(req: Request, res: Response) {
         const isSuccess = await this.svc.addPost(req.body);
         if (isSuccess) {
-            res.status(201).json({ message: "created", post: req.body });
+            this.Created(res, { message: "created", post: req.body });
             return;
         }
-        res.status(500).json({ message: "the fake db is whack" });
+        this.ServerError(res, "the fake db is whack");
     }
 }
